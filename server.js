@@ -13,6 +13,9 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({ status: "Gender Finder API is alive 🧬" });
 });
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 // ── MAIN ROUTE ───────────────────────────────────────────────────────
 app.post("/result", async (req, res) => {
