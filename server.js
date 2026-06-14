@@ -57,7 +57,7 @@ Rules:
 - keep it playful, never mean`;
 
   const payload = JSON.stringify({
-    model: "llama3-8b-8192",
+    model: "llama-3.3-70b-versatile",
     messages: [{ role: "user", content: prompt }],
     temperature: 1.1,
     max_tokens: 350,
