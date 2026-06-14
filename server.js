@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require("express");
 const https = require("https");
 const cors = require("cors");
@@ -29,24 +28,36 @@ app.post("/result", async (req, res) => {
     .map((a, i) => `Q${i + 1}: ${a.q}\nAnswer: ${a.a}`)
     .join("\n\n");
 
-  const prompt = `You are a hilarious AI that determines someone's gender energy based on personality quiz answers.
+  const prompt = `You are a hilarious AI that determines someone's personality energy breakdown based on quiz answers.
 
 ${answersText}
 
+Pick 4 to 6 energy types from this list that best match the person:
+🗿 Sigma, 🌾 Aura Farmer, 👑 Roman Emperor, 🤖 NPC, 💅 Girl Boss, 🌀 Chaotic Neutral, 🐺 Alpha, 🎭 Main Character, 🧘 Zen Master, 🔥 Menace to Society, 💤 Background Character, 🏛️ Philosopher King, 🦁 Lone Wolf, 🧠 Galaxy Brain, 🎪 Court Jester, 💀 Sigma Grindset
+
 Respond ONLY with valid JSON, no markdown, no explanation:
 {
-  "emoji": "<single emoji>",
-  "title": "<meme-style title like '100% Sigma Male' or '78% Roman Emperor Energy' or 'Certified NPC'>",
+  "emoji": "<single emoji that best represents them overall>",
+  "title": "<funny meme-style overall title like 'Certified Aura Farmer' or 'Sigma NPC Hybrid'>",
   "description": "<2 sentences, funny, references something specific from their answers>",
-  "male_pct": <0-100>,
-  "female_pct": <0-100, must sum to 100 with male_pct>,
-  "roast": "<one spicy AI roast sentence about them>"
+  "roast": "<one spicy AI roast sentence about them>",
+  "energies": [
+    { "emoji": "<emoji>", "label": "<energy name>", "pct": <number> },
+    { "emoji": "<emoji>", "label": "<energy name>", "pct": <number> },
+    { "emoji": "<emoji>", "label": "<energy name>", "pct": <number> },
+    { "emoji": "<emoji>", "label": "<energy name>", "pct": <number> }
+  ]
 }
 
-Rules: use internet meme culture. Make percentages unexpected and funny. Keep it playful, never mean.`;
+Rules:
+- energies must have 4 to 6 items
+- all pct values must add up to exactly 100
+- make percentages unexpected and funny like 5%, 67%, 13%
+- pick energies that actually match their answers
+- keep it playful, never mean`;
 
   const payload = JSON.stringify({
-    model: "llama-3.3-70b-versatile",
+    model: "llama3-8b-8192",
     messages: [{ role: "user", content: prompt }],
     temperature: 1.1,
     max_tokens: 350,
@@ -79,7 +90,6 @@ Rules: use internet meme culture. Make percentages unexpected and funny. Keep it
       request.end();
     });
 
-    console.log("Groq response:", JSON.stringify(data));
     const raw = data.choices[0].message.content
       .replace(/```json|```/g, "")
       .trim();
@@ -92,9 +102,13 @@ Rules: use internet meme culture. Make percentages unexpected and funny. Keep it
       emoji: "🤔",
       title: "Unclassifiable Entity",
       description: "Our AI had an existential crisis trying to figure you out. That's honestly impressive.",
-      male_pct: 50,
-      female_pct: 50,
       roast: "You broke the algorithm. That's your superpower.",
+      energies: [
+        { emoji: "🗿", label: "Sigma", pct: 25 },
+        { emoji: "🤖", label: "NPC", pct: 25 },
+        { emoji: "🌀", label: "Chaotic Neutral", pct: 25 },
+        { emoji: "💤", label: "Background Character", pct: 25 },
+      ]
     });
   }
 });
