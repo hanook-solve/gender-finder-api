@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const https = require("https");
 const cors = require("cors");
@@ -5,10 +6,9 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors()); // allows your Vercel frontend to call this
+app.use(cors());
 app.use(express.json());
 
-// ── HEALTH CHECK ─────────────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.json({ status: "Gender Finder API is alive 🧬" });
 });
@@ -16,7 +16,6 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// ── MAIN ROUTE ───────────────────────────────────────────────────────
 app.post("/result", async (req, res) => {
   const { answers } = req.body;
 
@@ -60,7 +59,7 @@ Rules:
     model: "llama-3.3-70b-versatile",
     messages: [{ role: "user", content: prompt }],
     temperature: 1.1,
-    max_tokens: 350,
+    max_tokens: 500,
   });
 
   try {
@@ -90,6 +89,7 @@ Rules:
       request.end();
     });
 
+    console.log("Groq response:", JSON.stringify(data));
     const raw = data.choices[0].message.content
       .replace(/```json|```/g, "")
       .trim();
@@ -107,7 +107,7 @@ Rules:
         { emoji: "🗿", label: "Sigma", pct: 25 },
         { emoji: "🤖", label: "NPC", pct: 25 },
         { emoji: "🌀", label: "Chaotic Neutral", pct: 25 },
-        { emoji: "💤", label: "Background Character", pct: 25 },
+        { emoji: "💤", label: "Background Character", pct: 25 }
       ]
     });
   }
