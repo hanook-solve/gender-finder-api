@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require("express");
 const https = require("https");
 const cors = require("cors");
+const { Resend } = require('resend');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.use(cors());
 app.use(express.json());
@@ -110,6 +112,42 @@ Rules:
         { emoji: "💤", label: "Background Character", pct: 25 }
       ]
     });
+  }
+});
+
+// ── FEEDBACK ROUTE ───────────────────────────────────────────────────
+app.post("/feedback", async (req, res) => {
+  const { rating, message, gender, title } = req.body;
+
+  if (!message || typeof message !== "string" || message.trim().length === 0) {
+    return res.status(400).json({ error: "Feedback message is required" });
+  }
+
+  const safeRating = rating || "Not rated";
+  const safeGender = gender || "N/A";
+  const safeTitle = title || "N/A";
+  const safeMessage = message.trim().slice(0, 2000);
+
+  try {
+    await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: 'browk1098@gmail.com',
+      subject: `🧬 Gender Finder Feedback — ${safeRating}`,
+      html: `
+        <h2>New Feedback Received</h2>
+        <p><strong>Rating:</strong> ${safeRating}</p>
+        <p><strong>User's result was:</strong> ${safeGender} — ${safeTitle}</p>
+        <p><strong>Message:</strong></p>
+        <p>${safeMessage.replace(/\n/g, "<br>")}</p>
+        <hr>
+        <p style="color:#888;font-size:12px;">Sent from genderfinder.online feedback form</p>
+      `
+    });
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Resend error:", err);
+    return res.status(500).json({ error: "Failed to send feedback" });
   }
 });
 
